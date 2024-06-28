@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "opentelemetry-exporter-oci-monitoring"
+version = "0.1.0"
+description = ""
+authors = ["Björn Reetz <git@bjoern-reetz.de>"]
+readme = "README.md"
+packages = [{include = "opentelemetry_exporter_oci_monitoring", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
