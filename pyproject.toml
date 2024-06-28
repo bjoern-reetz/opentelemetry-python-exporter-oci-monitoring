@@ -6,6 +6,14 @@ requires-python = ">=3.8"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_scheme = "pep440"
+version_provider = "poetry"
+update_changelog_on_bump = true
+major_version_zero = true
+
 [tool.coverage.run]
 source = ["src", "tests"]
 
