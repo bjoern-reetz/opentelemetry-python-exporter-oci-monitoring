@@ -107,12 +107,16 @@ def metrics_data(resource_metrics: ResourceMetrics) -> MetricsData:
 
 @pytest.fixture()
 def post_metrics_data_response() -> Response[PostMetricDataResponseDetails]:
+    data = PostMetricDataResponseDetails(failed_metrics_count=0, failed_metrics=[])
     mock = unittest.mock.create_autospec(
-        PostMetricDataResponseDetails,
-        spec_set=True,
+        Response,
+        # spec_set=True does not work as intended for unknown reasons
         instance=True,
     )
-    mock.configure_mock(**{"failed_metrics_count": 0, "failed_metrics": []})
+    mock.configure_mock(
+        status=200,
+        data=data,
+    )
     return mock
 
 
