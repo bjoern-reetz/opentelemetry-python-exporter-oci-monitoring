@@ -28,7 +28,7 @@ ignore_missing_imports = true
 
 [tool.poetry]
 name = "opentelemetry-exporter-oci-monitoring"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["Björn Reetz <git@bjoern-reetz.de>"]
 readme = "README.md"
