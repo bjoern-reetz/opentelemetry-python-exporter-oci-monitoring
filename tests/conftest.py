@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import unittest.mock
 from typing import Dict
+from unittest.mock import NonCallableMock
 
 import pytest
 from oci.monitoring import MonitoringClient
@@ -106,12 +106,10 @@ def metrics_data(resource_metrics: ResourceMetrics) -> MetricsData:
 
 
 @pytest.fixture()
-def post_metrics_data_response() -> Response[PostMetricDataResponseDetails]:
+def post_metrics_data_response() -> NonCallableMock:
     data = PostMetricDataResponseDetails(failed_metrics_count=0, failed_metrics=[])
-    mock = unittest.mock.create_autospec(
-        Response,
-        # spec_set=True does not work as intended for unknown reasons
-        instance=True,
+    mock = NonCallableMock(
+        spec=Response,  # using spec instead of spec_set because for some reason it complains about setting status
     )
     mock.configure_mock(
         status=200,
@@ -122,8 +120,8 @@ def post_metrics_data_response() -> Response[PostMetricDataResponseDetails]:
 
 @pytest.fixture()
 def monitoring_client(
-    post_metrics_data_response: Response[PostMetricDataResponseDetails],
-) -> MonitoringClient:
-    mock = unittest.mock.create_autospec(MonitoringClient, spec_set=True, instance=True)
+    post_metrics_data_response: NonCallableMock,
+) -> NonCallableMock:
+    mock = NonCallableMock(spec_set=MonitoringClient)
     mock.configure_mock(**{"post_metric_data.return_value": post_metrics_data_response})
     return mock
