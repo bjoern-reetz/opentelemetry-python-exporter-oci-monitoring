@@ -1,3 +1,9 @@
+## v0.2.1 (2024-07-20)
+
+### Fix
+
+- fix isinstance call using wrong Histogram class
+
 ## v0.2.0 (2024-07-14)
 
 ### Feat

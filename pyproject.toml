@@ -1,6 +1,6 @@
 [project]
 name = "opentelemetry-exporter-oci-monitoring"
-version = "0.2.0"
+version = "0.2.1"
 requires-python = ">=3.8"
 
 [build-system]
@@ -22,7 +22,7 @@ source = ["src", "tests"]
 
 [tool.poetry]
 name = "opentelemetry-exporter-oci-monitoring"
-version = "0.2.0"
+version = "0.2.1"
 description = ""
 authors = ["Björn Reetz <git@bjoern-reetz.de>"]
 readme = "README.md"
