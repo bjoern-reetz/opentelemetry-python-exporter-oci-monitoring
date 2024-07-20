@@ -6,8 +6,8 @@
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/opentelemetry-exporter-oci-monitoring)](https://pypistats.org/packages/opentelemetry-exporter-oci-monitoring)
 [![license](./images/license.svg)](./LICENSE)
 [![source files coverage](./images/coverage.svg)](https://coverage.readthedocs.io/)
+[![pyright](./images/pyright.svg)](https://microsoft.github.io/pyright)
 [![ruff](./images/ruff.svg)](https://docs.astral.sh/ruff)
-[![mypy](./images/mypy.svg)](https://www.mypy-lang.org/)
 [![pre-commit](./images/pre-commit.svg)](https://pre-commit.com/)
 
 A Python OpenTelemetry exporter for the OCI Monitoring Service.
