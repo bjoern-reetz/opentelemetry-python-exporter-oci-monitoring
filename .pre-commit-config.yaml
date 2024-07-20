@@ -20,17 +20,17 @@ repos:
       - id: ruff-format
   - repo: local
     hooks:
-      - id: mypy
-        name: mypy
+      - id: pyright
+        name: pyright
         language: system
-        entry: poetry run -- mypy
+        entry: poetry run pyright
         types: [python]
         pass_filenames: false
         stages: [pre-commit, pre-merge-commit, pre-push, manual]
       - id: pytest
         name: pytest
         language: system
-        entry: poetry run -- pytest
+        entry: poetry run pytest
         types: [python]
         pass_filenames: false
         stages: [pre-commit, pre-merge-commit, pre-push, manual]
