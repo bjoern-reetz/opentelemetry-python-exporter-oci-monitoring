@@ -1,8 +1,11 @@
 from unittest.mock import NonCallableMock
 
-from oci.monitoring.models import PostMetricDataDetails
-from oci.response import Response
+from oci.monitoring.models import (  # pyright: ignore[reportMissingTypeStubs]
+    PostMetricDataDetails,
+)
+from oci.response import Response  # pyright: ignore[reportMissingTypeStubs]
 from opentelemetry.sdk.metrics.export import MetricExportResult, MetricsData
+
 from opentelemetry_exporter_oci_monitoring import OCIMetricsExporter
 
 
@@ -17,10 +20,10 @@ def test_exporter(
         post_metric_data_details: PostMetricDataDetails,
     ) -> Response:
         assert (
-            post_metric_data_details.batch_atomicity
+            post_metric_data_details.batch_atomicity  # pyright: ignore[reportUnknownMemberType]
             == PostMetricDataDetails.BATCH_ATOMICITY_ATOMIC
         )
-        assert len(post_metric_data_details.metric_data) > 0
+        assert len(post_metric_data_details.metric_data) > 0  # pyright: ignore[reportUnknownMemberType,reportArgumentType]
 
         return monitoring_client.post_metric_data.return_value
 

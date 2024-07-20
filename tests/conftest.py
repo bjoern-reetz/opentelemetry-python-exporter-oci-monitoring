@@ -4,9 +4,11 @@ from typing import Dict
 from unittest.mock import NonCallableMock
 
 import pytest
-from oci.monitoring import MonitoringClient
-from oci.monitoring.models import PostMetricDataResponseDetails
-from oci.response import Response
+from oci.monitoring import MonitoringClient  # pyright: ignore[reportMissingTypeStubs]
+from oci.monitoring.models import (  # pyright: ignore[reportMissingTypeStubs]
+    PostMetricDataResponseDetails,
+)
+from oci.response import Response  # pyright: ignore[reportMissingTypeStubs]
 from opentelemetry.sdk.metrics.export import (
     AggregationTemporality,
     Metric,
@@ -18,7 +20,9 @@ from opentelemetry.sdk.metrics.export import (
 )
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.util.instrumentation import InstrumentationScope
-from opentelemetry.util.types import AttributeValue
+from opentelemetry.util.types import (  # pyright: ignore[reportMissingTypeStubs]
+    AttributeValue,
+)
 
 Attributes = Dict[str, AttributeValue]
 
@@ -109,19 +113,16 @@ def metrics_data(resource_metrics: ResourceMetrics) -> MetricsData:
 def post_metrics_data_response() -> NonCallableMock:
     data = PostMetricDataResponseDetails(failed_metrics_count=0, failed_metrics=[])
     mock = NonCallableMock(
-        spec=Response,  # using spec instead of spec_set because for some reason it complains about setting status
+        # using spec instead of spec_set because for some reason
+        # it complains about setting status
+        spec=Response
     )
-    mock.configure_mock(
-        status=200,
-        data=data,
-    )
+    mock.configure_mock(status=200, data=data)
     return mock
 
 
 @pytest.fixture()
-def monitoring_client(
-    post_metrics_data_response: NonCallableMock,
-) -> NonCallableMock:
+def monitoring_client(post_metrics_data_response: NonCallableMock) -> NonCallableMock:
     mock = NonCallableMock(spec_set=MonitoringClient)
     mock.configure_mock(**{"post_metric_data.return_value": post_metrics_data_response})
     return mock

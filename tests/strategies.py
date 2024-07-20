@@ -10,7 +10,9 @@ from opentelemetry.sdk.metrics.export import (
     NumberDataPoint,
     Sum,
 )
-from opentelemetry.util.types import AttributeValue
+from opentelemetry.util.types import (  # pyright: ignore[reportMissingTypeStubs]
+    AttributeValue,
+)
 
 Attributes = Mapping[str, AttributeValue]
 
