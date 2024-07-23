@@ -105,6 +105,7 @@ split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/test_*.py" = ["S101"]
+"tests/strategies.py" = ["B008"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

@@ -58,8 +58,8 @@ def attributes(
 @st.composite
 def number_data_points(
     draw: st.DrawFn,
-    attributes: st.SearchStrategy[Attributes] = attributes(),  # noqa: B008
-    value: st.SearchStrategy[int | float] = st.integers() | st.floats(),  # noqa: B008
+    attributes: st.SearchStrategy[Attributes] = attributes(),
+    value: st.SearchStrategy[int | float] = st.integers() | st.floats(),
 ) -> NumberDataPoint:
     start_time_unix_nano = draw(st.integers(min_value=0))
     delta_time_unix_nano = draw(st.integers(min_value=1))
@@ -74,13 +74,13 @@ def number_data_points(
 @st.composite
 def sums(
     draw: st.DrawFn,
-    data_points: st.SearchStrategy[list[NumberDataPoint]] = st.lists(  # noqa: B008
-        number_data_points()  # noqa: B008
+    data_points: st.SearchStrategy[list[NumberDataPoint]] = st.lists(
+        number_data_points()
     ),
     aggregation_temporalities: st.SearchStrategy[
         AggregationTemporality
-    ] = st.sampled_from(AggregationTemporality),  # noqa: B008
-    is_monotonics: st.SearchStrategy[bool] = st.booleans(),  # noqa: B008
+    ] = st.sampled_from(AggregationTemporality),
+    is_monotonics: st.SearchStrategy[bool] = st.booleans(),
 ) -> Sum:
     return Sum(
         data_points=draw(data_points),
@@ -92,7 +92,7 @@ def sums(
 @st.composite
 def metrics(
     draw: st.DrawFn,
-    names: st.SearchStrategy[str] = simple_strings(min_size=3, max_size=12),  # noqa: B008
-    data: st.SearchStrategy[DataT] = sums(),  # noqa: B008
+    names: st.SearchStrategy[str] = simple_strings(min_size=3, max_size=12),
+    data: st.SearchStrategy[DataT] = sums(),
 ) -> Metric:
     return Metric(name=draw(names), description=None, unit=None, data=draw(data))
