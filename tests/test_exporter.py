@@ -3,42 +3,29 @@ from unittest.mock import NonCallableMock
 from oci.monitoring.models import (  # pyright: ignore[reportMissingTypeStubs]
     PostMetricDataDetails,
 )
-from oci.response import Response  # pyright: ignore[reportMissingTypeStubs]
 from opentelemetry.sdk.metrics.export import MetricExportResult, MetricsData
 
 from opentelemetry_exporter_oci_monitoring import OCIMetricsExporter
 
 
-def test_exporter(
-    monitoring_client: NonCallableMock, metrics_data: MetricsData
+def test_convert_metrics(
+    oci_metrics_exporter: OCIMetricsExporter, metrics_data: MetricsData
 ) -> None:
-    namespace = "foo"
-    resource_group = "bar"
-    compartment_id = "baz"
+    converted_metric_data = list(oci_metrics_exporter._convert_metrics(metrics_data))  # pyright: ignore[reportPrivateUsage]
+    assert len(converted_metric_data) > 0
 
-    def validate_post_metric_data(
-        post_metric_data_details: PostMetricDataDetails,
-    ) -> Response:
-        assert (
-            post_metric_data_details.batch_atomicity  # pyright: ignore[reportUnknownMemberType]
-            == PostMetricDataDetails.BATCH_ATOMICITY_ATOMIC
-        )
-        assert len(post_metric_data_details.metric_data) > 0  # pyright: ignore[reportUnknownMemberType,reportArgumentType]
 
-        return monitoring_client.post_metric_data.return_value
-
-    monitoring_client.configure_mock(
-        **{"post_metric_data.side_effect": validate_post_metric_data}
-    )
-
-    exporter = OCIMetricsExporter(
-        monitoring_client,
-        namespace=namespace,
-        resource_group=resource_group,
-        compartment_id=compartment_id,
-    )
-
-    result = exporter.export(metrics_data)
+def test_post_metric_data(
+    oci_metrics_exporter: OCIMetricsExporter,
+    monitoring_client: NonCallableMock,
+    metrics_data: MetricsData,
+) -> None:
+    result = oci_metrics_exporter.export(metrics_data)
     assert result == MetricExportResult.SUCCESS
 
-    monitoring_client.post_metric_data.assert_called_once()
+    monitoring_client.post_metric_data.assert_called_once_with(
+        PostMetricDataDetails(
+            metric_data=list(oci_metrics_exporter._convert_metrics(metrics_data)),  # pyright: ignore[reportPrivateUsage]
+            batch_atomicity=oci_metrics_exporter.batch_atomicity,
+        )
+    )
