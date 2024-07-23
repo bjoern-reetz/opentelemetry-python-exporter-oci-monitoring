@@ -104,7 +104,7 @@ ignore = [
 split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/test_*.py" = ["S101"]
+"tests/**/test_*.py" = ["S101", "SLF001"]
 "tests/strategies.py" = ["B008"]
 
 [tool.ruff.lint.pydocstyle]
