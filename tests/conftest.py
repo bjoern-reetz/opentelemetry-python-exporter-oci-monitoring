@@ -24,6 +24,8 @@ from opentelemetry.util.types import (  # pyright: ignore[reportMissingTypeStubs
     AttributeValue,
 )
 
+from opentelemetry_exporter_oci_monitoring import OCIMetricsExporter
+
 Attributes = Dict[str, AttributeValue]
 
 
@@ -126,3 +128,13 @@ def monitoring_client(post_metrics_data_response: NonCallableMock) -> NonCallabl
     mock = NonCallableMock(spec_set=MonitoringClient)
     mock.configure_mock(**{"post_metric_data.return_value": post_metrics_data_response})
     return mock
+
+
+@pytest.fixture()
+def oci_metrics_exporter(monitoring_client: NonCallableMock) -> OCIMetricsExporter:
+    namespace = "my-namespace"
+    resource_group = "my-resource-group"
+    compartment_id = "my-compartment-id"
+    return OCIMetricsExporter(
+        monitoring_client, namespace, resource_group, compartment_id
+    )
