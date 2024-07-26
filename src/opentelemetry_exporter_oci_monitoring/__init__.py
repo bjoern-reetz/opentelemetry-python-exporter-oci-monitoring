@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import InitVar, dataclass, field
 from http import HTTPStatus
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, Iterator, Literal, cast
+from typing import TYPE_CHECKING, Any, Iterator, cast
 
 from oci.monitoring.models import (  # pyright: ignore[reportMissingTypeStubs]
     Datapoint,
@@ -28,8 +28,9 @@ from opentelemetry.sdk.metrics.export import (
 from opentelemetry.sdk.metrics.export import Histogram as HistogramPoint
 
 from opentelemetry_exporter_oci_monitoring.models import (
-    OCIPostMetricDataResponseDetails,
-    OCIResponse,
+    BATCH_ATOMICITY,
+    OCIMetricDataDetails,
+    OCIMetricsClient,
 )
 
 if TYPE_CHECKING:
@@ -53,7 +54,7 @@ class OCIMetricsExporter(MetricExporter):
     dim_prefix_resource: str = ""
     dim_prefix_scope: str = "scope."
 
-    batch_atomicity: Literal["ATOMIC", "NON_ATOMIC"] = "ATOMIC"
+    batch_atomicity: BATCH_ATOMICITY = "ATOMIC"
 
     preferred_temporality: InitVar[dict[type, AggregationTemporality] | None] = None
     preferred_aggregation: InitVar[dict[type, Aggregation] | None] = None
@@ -91,14 +92,11 @@ class OCIMetricsExporter(MetricExporter):
                 "Ignored extra export kwargs.", extra={"ignored_kwargs": kwargs}
             )
 
-        response = cast(
-            OCIResponse[OCIPostMetricDataResponseDetails],
-            self.client.post_metric_data(  # pyright: ignore[reportUnknownMemberType]
-                PostMetricDataDetails(
-                    metric_data=list(self._convert_metrics(metrics_data)),
-                    batch_atomicity=self.batch_atomicity,
-                )
-            ),
+        response = cast(OCIMetricsClient, self.client).post_metric_data(
+            PostMetricDataDetails(
+                metric_data=list(self._convert_metrics(metrics_data)),
+                batch_atomicity=self.batch_atomicity,
+            )
         )
 
         response_data = response.data
@@ -132,7 +130,7 @@ class OCIMetricsExporter(MetricExporter):
 
     def _convert_metrics(
         self, metrics_data: MetricsData, /
-    ) -> Iterator[MetricDataDetails]:
+    ) -> Iterator[OCIMetricDataDetails]:
         for resource_metric in metrics_data.resource_metrics:
             resource = resource_metric.resource
             resource_dims = self._extract_resource_dimensions(resource)
@@ -163,14 +161,17 @@ class OCIMetricsExporter(MetricExporter):
                         for data_point in data.data_points
                     ]
 
-                    yield MetricDataDetails(
-                        namespace=self.namespace,
-                        resource_group=self.resource_group,
-                        compartment_id=self.compartment_id,
-                        name=name,
-                        dimensions={**resource_dims, **scope_dims},
-                        metadata={"description": description},
-                        datapoints=datapoints,
+                    yield cast(
+                        OCIMetricDataDetails,
+                        MetricDataDetails(
+                            namespace=self.namespace,
+                            resource_group=self.resource_group,
+                            compartment_id=self.compartment_id,
+                            name=name,
+                            dimensions={**resource_dims, **scope_dims},
+                            metadata={"description": description},
+                            datapoints=datapoints,
+                        ),
                     )
 
     def _extract_resource_dimensions(self, resource: Resource, /) -> dict[str, str]:
