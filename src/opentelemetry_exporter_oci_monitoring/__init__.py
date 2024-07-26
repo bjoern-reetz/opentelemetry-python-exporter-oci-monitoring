@@ -161,7 +161,7 @@ class OCIMetricsExporter(MetricExporter):
                         compartment_id=self.compartment_id,
                         name=name,
                         dimensions={**resource_dims, **scope_dims},
-                        metadata={"description": description},
+                        metadata={"description": description} if description else {},
                         datapoints=datapoints,
                     )
 
