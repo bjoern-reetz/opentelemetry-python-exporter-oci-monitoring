@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import InitVar, dataclass, field
+from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
 from logging import getLogger
 from typing import TYPE_CHECKING, Any, Iterator, Literal
@@ -31,6 +32,7 @@ if TYPE_CHECKING:
 
 logger = getLogger(__name__)
 
+UTC = timezone(timedelta())
 BATCH_ATOMICITY = Literal["ATOMIC", "NON_ATOMIC"]
 
 
@@ -144,7 +146,9 @@ class OCIMetricsExporter(MetricExporter):
 
                     datapoints = [
                         Datapoint(
-                            timestamp=data_point.time_unix_nano,
+                            timestamp=datetime.fromtimestamp(
+                                data_point.time_unix_nano, tz=UTC
+                            ),
                             value=float(data_point.value),
                             count=1,
                         )
