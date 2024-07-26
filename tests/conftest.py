@@ -4,11 +4,9 @@ from typing import Dict
 from unittest.mock import NonCallableMock
 
 import pytest
-from oci.monitoring import MonitoringClient  # pyright: ignore[reportMissingTypeStubs]
-from oci.monitoring.models import (  # pyright: ignore[reportMissingTypeStubs]
-    PostMetricDataResponseDetails,
-)
-from oci.response import Response  # pyright: ignore[reportMissingTypeStubs]
+from oci.monitoring import MonitoringClient
+from oci.monitoring.models import PostMetricDataResponseDetails
+from oci.response import Response
 from opentelemetry.sdk.metrics.export import (
     AggregationTemporality,
     Metric,

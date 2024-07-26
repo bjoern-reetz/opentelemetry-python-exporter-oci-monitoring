@@ -1,8 +1,6 @@
 from unittest.mock import NonCallableMock
 
-from oci.monitoring.models import (  # pyright: ignore[reportMissingTypeStubs]
-    PostMetricDataDetails,
-)
+from oci.monitoring.models import PostMetricDataDetails
 from opentelemetry.sdk.metrics.export import MetricExportResult, MetricsData
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.util.instrumentation import InstrumentationScope
