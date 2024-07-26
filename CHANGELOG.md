@@ -1,3 +1,15 @@
+## v0.2.2 (2024-07-27)
+
+### Fix
+
+- omit description in metadata if it is empty
+- convert time_unix_nano to datetime in UTC
+
+### Refactor
+
+- replace models with type stubs
+- convert models to Protocols
+
 ## v0.2.1 (2024-07-20)
 
 ### Fix

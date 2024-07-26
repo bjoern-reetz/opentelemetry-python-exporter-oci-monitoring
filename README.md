@@ -21,3 +21,6 @@ from opentelemetry_exporter_oci_monitoring import OCIMetricsExporter
 
 exporter = OCIMetricsExporter(client, namespace, resource_group, compartment_id)
 ```
+
+
+- [OCI Documentation of PostMetricData API](https://docs.oracle.com/en-us/iaas/api/#/en/monitoring/20180401/MetricData/PostMetricData)
