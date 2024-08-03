@@ -27,5 +27,4 @@ from opentelemetry_exporter_oci_monitoring import OCIMetricsExporter
 exporter = OCIMetricsExporter(client, namespace, resource_group, compartment_id)
 ```
 
-
-- [OCI Documentation of PostMetricData API](https://docs.oracle.com/en-us/iaas/api/#/en/monitoring/20180401/MetricData/PostMetricData)
+Remember to set the service endpoint to a `telemetry-ingestion` URL (e.g. `https://telemetry-ingestion.eu-frankfurt-1.oraclecloud.com`) when creating the metrics client. For more details refer to the [OCI Documentation of PostMetricData API](https://docs.oracle.com/en-us/iaas/api/#/en/monitoring/20180401/MetricData/PostMetricData).
