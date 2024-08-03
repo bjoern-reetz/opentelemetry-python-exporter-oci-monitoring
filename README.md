@@ -16,6 +16,11 @@ A Python OpenTelemetry exporter for the OCI Monitoring Service.
 pip install opentelemetry-exporter-oci-monitoring
 ```
 
+This software is in an early development phase. Feel free to use it at your own risk.
+
+**Histograms are not yet implemented and will be skipped during export.**
+
+
 ```python
 from opentelemetry_exporter_oci_monitoring import OCIMetricsExporter
 
