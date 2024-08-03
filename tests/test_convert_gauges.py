@@ -1,3 +1,4 @@
+import pytest
 from opentelemetry.sdk.metrics.export import Gauge as GaugePoint
 from opentelemetry.sdk.metrics.export import (
     Metric,
@@ -13,7 +14,7 @@ from opentelemetry_exporter_oci_monitoring import OCIMetricsExporter
 
 
 def test_convert_gauge(oci_metrics_exporter: OCIMetricsExporter) -> None:
-    point = NumberDataPoint({"foo": "bar"}, 123, 456, 42)
+    point = NumberDataPoint({"foo": "bar"}, 123456789123456789, 456789123456789123, 42)
     data = GaugePoint(data_points=[point])
     metric = Metric("my-metric-name", description=None, unit=None, data=data)
     scope = InstrumentationScope("scope-name")
@@ -33,4 +34,6 @@ def test_convert_gauge(oci_metrics_exporter: OCIMetricsExporter) -> None:
     datapoint = converted_gauge_metric.datapoints[0]
     assert datapoint.value == float(point.value)
     assert datapoint.count == 1
-    assert datapoint.timestamp.timestamp() == float(point.time_unix_nano)
+    assert datapoint.timestamp.timestamp() == pytest.approx(  # pyright: ignore[reportUnknownMemberType]
+        point.time_unix_nano / 1e9
+    )

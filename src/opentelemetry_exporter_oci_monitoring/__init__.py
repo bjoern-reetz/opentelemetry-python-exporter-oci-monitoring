@@ -147,7 +147,7 @@ class OCIMetricsExporter(MetricExporter):
                     datapoints = [
                         Datapoint(
                             timestamp=datetime.fromtimestamp(
-                                data_point.time_unix_nano, tz=UTC
+                                data_point.time_unix_nano / 1e9, tz=UTC
                             ),
                             value=float(data_point.value),
                             count=1,
