@@ -10,10 +10,10 @@ from opentelemetry.sdk.metrics.export import (
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.util.instrumentation import InstrumentationScope
 
-from opentelemetry_exporter_oci_monitoring.converter import OCIMetricsConverter
+from opentelemetry_exporter_oci_monitoring.converter import DefaultMetricsConverter
 
 
-def test_convert_gauge(oci_metrics_converter: OCIMetricsConverter) -> None:
+def test_convert_gauge(oci_metrics_converter: DefaultMetricsConverter) -> None:
     point = NumberDataPoint({"foo": "bar"}, 123456789123456789, 456789123456789123, 42)
     data = GaugePoint(data_points=[point])
     metric = Metric("my-metric-name", description=None, unit=None, data=data)

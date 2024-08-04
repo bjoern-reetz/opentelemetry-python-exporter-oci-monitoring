@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from logging import getLogger
-from typing import TYPE_CHECKING, Generic, Iterator, Protocol, TypeVar
+from typing import TYPE_CHECKING, Iterator, Protocol
 
 from oci.monitoring.models import Datapoint, MetricDataDetails
 from opentelemetry.sdk.metrics.export import Histogram as HistogramPoint
@@ -49,7 +49,6 @@ class PrefixedDimensionsExtractor(DimensionsExtractor):
         return dimensions
 
 
-T_co = TypeVar("T_co", covariant=True)
 class MetadataExtractor(Protocol):
     def extract(
         self, resource: Resource, scope: InstrumentationScope, metric: Metric
@@ -70,12 +69,13 @@ class DefaultMetadataExtractor(MetadataExtractor):
             metadata["unit"] = metric.unit
         return metadata or None
 
-class MetricsConverter(Protocol, Generic[T_co]):
-    def convert(self, metrics_data: MetricsData, /) -> Iterator[T_co]: ...
+
+class MetricsConverter(Protocol):
+    def convert(self, metrics_data: MetricsData, /) -> Iterator[MetricDataDetails]: ...
 
 
 @dataclass
-class OCIMetricsConverter(MetricsConverter[MetricDataDetails]):
+class DefaultMetricsConverter(MetricsConverter):
     namespace: str
     resource_group: str
     compartment_id: str

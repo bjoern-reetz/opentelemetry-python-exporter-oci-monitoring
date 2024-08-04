@@ -5,7 +5,7 @@ from http import HTTPStatus
 from logging import getLogger
 from typing import TYPE_CHECKING, Any, Literal
 
-from oci.monitoring.models import MetricDataDetails, PostMetricDataDetails
+from oci.monitoring.models import PostMetricDataDetails
 from opentelemetry.sdk.metrics._internal.instrument import (
     Counter,
     Gauge,
@@ -36,7 +36,7 @@ BATCH_ATOMICITY = Literal["ATOMIC", "NON_ATOMIC"]
 @dataclass
 class OCIMetricsExporter(MetricExporter):
     client: MonitoringClient = field(repr=False)
-    converter: MetricsConverter[MetricDataDetails] = field(repr=False)
+    converter: MetricsConverter = field(repr=False)
 
     batch_atomicity: BATCH_ATOMICITY = "ATOMIC"
     preferred_temporality: InitVar[dict[type, AggregationTemporality] | None] = None
