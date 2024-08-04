@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Generic, Iterator, Protocol, TypeVar
 
 from oci.monitoring.models import Datapoint, MetricDataDetails
 from opentelemetry.sdk.metrics.export import Histogram as HistogramPoint
-from opentelemetry.sdk.metrics.export import MetricsData
+from opentelemetry.sdk.metrics.export import Metric, MetricsData
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.util.instrumentation import InstrumentationScope
 
@@ -50,7 +50,25 @@ class PrefixedDimensionsExtractor(DimensionsExtractor):
 
 
 T_co = TypeVar("T_co", covariant=True)
+class MetadataExtractor(Protocol):
+    def extract(
+        self, resource: Resource, scope: InstrumentationScope, metric: Metric
+    ) -> Mapping[str, str] | None: ...
 
+
+class DefaultMetadataExtractor(MetadataExtractor):
+    def extract(
+        self,
+        resource: Resource,  # noqa: ARG002
+        scope: InstrumentationScope,  # noqa: ARG002
+        metric: Metric,
+    ) -> Mapping[str, str] | None:
+        metadata: Mapping[str, str] = {}
+        if metric.description:
+            metadata["description"] = metric.description
+        if metric.unit:
+            metadata["unit"] = metric.unit
+        return metadata or None
 
 class MetricsConverter(Protocol, Generic[T_co]):
     def convert(self, metrics_data: MetricsData, /) -> Iterator[T_co]: ...
@@ -65,6 +83,9 @@ class OCIMetricsConverter(MetricsConverter[MetricDataDetails]):
     dimensions_extractor: DimensionsExtractor = field(
         default_factory=PrefixedDimensionsExtractor
     )
+    metadata_extractor: MetadataExtractor = field(
+        default_factory=DefaultMetadataExtractor
+    )
 
     def convert(self, metrics_data: MetricsData, /) -> Iterator[MetricDataDetails]:
         for resource_metric in metrics_data.resource_metrics:
@@ -73,8 +94,6 @@ class OCIMetricsConverter(MetricsConverter[MetricDataDetails]):
                 scope = scope_metric.scope
                 for metric in scope_metric.metrics:
                     name = metric.name
-                    description = metric.description
-                    _ = metric.unit
                     data = metric.data
 
                     if isinstance(data, HistogramPoint):
@@ -104,6 +123,8 @@ class OCIMetricsConverter(MetricsConverter[MetricDataDetails]):
                         compartment_id=self.compartment_id,
                         name=name,
                         dimensions=self.dimensions_extractor.extract(resource, scope),
-                        metadata={"description": description} if description else {},
+                        metadata=self.metadata_extractor.extract(
+                            resource, scope, metric
+                        ),
                         datapoints=datapoints,
                     )
