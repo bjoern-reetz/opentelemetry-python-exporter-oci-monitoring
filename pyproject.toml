@@ -15,7 +15,7 @@ version_provider = "poetry"
 version_files = ["pyproject.toml:version"]
 update_changelog_on_bump = true
 major_version_zero = true
-pre_bump_hooks = ["git stash", "poetry run pytest", "scripts/regenerate-badges.sh"]
+pre_bump_hooks = ["poetry run pytest", "scripts/regenerate-badges.sh"]
 
 [tool.coverage.run]
 source = ["src", "tests"]
