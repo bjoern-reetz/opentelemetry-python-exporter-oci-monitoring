@@ -1,3 +1,21 @@
+## v0.3.0 (2024-08-04)
+
+### BREAKING CHANGE
+
+- Also, renamed from OCIMetricsConverter to DefaultMetricsConverter.
+- Metadata now also includes the unit by default.
+- The signature of OCIMetricsExporter.__init__() changed: You now need to pass a OCIMetricsConverter child object.
+
+### Feat
+
+- introduce MetadataExtractor
+- extract OCIMetricsConverter and PrefixedDimensionsExtractor from OCIMetricsExporter
+
+### Refactor
+
+- remove type variable from MetricsConverter protocol
+- improve type stubs
+
 ## v0.2.3 (2024-08-03)
 
 ### Fix
