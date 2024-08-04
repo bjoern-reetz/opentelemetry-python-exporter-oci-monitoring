@@ -1,34 +1,35 @@
-from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal, Mapping, Sequence
 
-@dataclass
+from attrs import define
+
+@define(slots=False, kw_only=True)
 class Datapoint:
+    count: int | None = 1
     timestamp: datetime
     value: float
-    count: int
 
-@dataclass
+@define(slots=False, kw_only=True)
 class MetricDataDetails:
-    namespace: str
-    resource_group: str
     compartment_id: str
-    name: str
-    dimensions: Mapping[str, str]
-    metadata: Mapping[str, str]
     datapoints: Sequence[Datapoint]
+    dimensions: Mapping[str, str]
+    metadata: Mapping[str, str] | None = None
+    name: str
+    namespace: str
+    resource_group: str | None = None
 
-@dataclass
+@define(slots=False, kw_only=True)
 class PostMetricDataDetails:
+    batch_atomicity: Literal["ATOMIC", "NON_ATOMIC", None] = "NON_ATOMIC"
     metric_data: Sequence[MetricDataDetails]
-    batch_atomicity: Literal["ATOMIC", "NON_ATOMIC"]
 
-@dataclass
+@define(slots=False, kw_only=True)
 class FailedMetricRecord:
     message: str
     metric_data: MetricDataDetails
 
-@dataclass
+@define(slots=False, kw_only=True)
 class PostMetricDataResponseDetails:
+    failed_metrics: list[FailedMetricRecord] | None
     failed_metrics_count: int
-    failed_metrics: list[FailedMetricRecord]
