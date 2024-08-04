@@ -23,9 +23,23 @@ source = ["src", "tests"]
 [tool.poetry]
 name = "opentelemetry-exporter-oci-monitoring"
 version = "0.2.3"
-description = ""
+description = "A Python OpenTelemetry exporter for the OCI Monitoring Service."
+license = "MIT"
 authors = ["Björn Reetz <git@bjoern-reetz.de>"]
 readme = "README.md"
+homepage = "https://github.com/bjoern-reetz/opentelemetry-python-exporter-oci-monitoring"
+repository = "https://github.com/bjoern-reetz/opentelemetry-python-exporter-oci-monitoring"
+documentation = "https://github.com/bjoern-reetz/opentelemetry-python-exporter-oci-monitoring"
+keywords = ["opentelemetry", "exporter", "oci", "monitoring"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: OpenTelemetry :: Exporters",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Monitoring",
+    "Typing :: Typed",
+]
 packages = [{include = "opentelemetry_exporter_oci_monitoring", from = "src"}]
 
 [tool.poetry.dependencies]
