@@ -10,10 +10,10 @@ from opentelemetry.sdk.metrics.export import (
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.util.instrumentation import InstrumentationScope
 
-from opentelemetry_exporter_oci_monitoring import OCIMetricsExporter
+from opentelemetry_exporter_oci_monitoring.converter import OCIMetricsConverter
 
 
-def test_convert_gauge(oci_metrics_exporter: OCIMetricsExporter) -> None:
+def test_convert_gauge(oci_metrics_converter: OCIMetricsConverter) -> None:
     point = NumberDataPoint({"foo": "bar"}, 123456789123456789, 456789123456789123, 42)
     data = GaugePoint(data_points=[point])
     metric = Metric("my-metric-name", description=None, unit=None, data=data)
@@ -23,13 +23,13 @@ def test_convert_gauge(oci_metrics_exporter: OCIMetricsExporter) -> None:
     resource_metric = ResourceMetrics(resource, [scope_metrics], schema_url="lorem")
     metrics_data = MetricsData(resource_metrics=[resource_metric])
 
-    converted_metrics = list(oci_metrics_exporter._convert_metrics(metrics_data))  # pyright: ignore[reportPrivateUsage]
+    converted_metrics = list(oci_metrics_converter.convert(metrics_data))
     assert len(converted_metrics) == 1
 
     converted_gauge_metric = converted_metrics[0]
-    assert converted_gauge_metric.namespace == oci_metrics_exporter.namespace
-    assert converted_gauge_metric.resource_group == oci_metrics_exporter.resource_group
-    assert converted_gauge_metric.compartment_id == oci_metrics_exporter.compartment_id
+    assert converted_gauge_metric.namespace == oci_metrics_converter.namespace
+    assert converted_gauge_metric.resource_group == oci_metrics_converter.resource_group
+    assert converted_gauge_metric.compartment_id == oci_metrics_converter.compartment_id
 
     datapoint = converted_gauge_metric.datapoints[0]
     assert datapoint.value == float(point.value)

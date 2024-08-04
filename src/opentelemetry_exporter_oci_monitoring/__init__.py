@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import InitVar, dataclass, field
-from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, Iterator, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
-from oci.monitoring.models import Datapoint, MetricDataDetails, PostMetricDataDetails
+from oci.monitoring.models import MetricDataDetails, PostMetricDataDetails
 from opentelemetry.sdk.metrics._internal.instrument import (
     Counter,
     Gauge,
@@ -22,32 +21,24 @@ from opentelemetry.sdk.metrics.export import (
     MetricExportResult,
     MetricsData,
 )
-from opentelemetry.sdk.metrics.export import Histogram as HistogramPoint
 
 if TYPE_CHECKING:
     from oci.monitoring import MonitoringClient
     from opentelemetry.sdk.metrics.view import Aggregation
-    from opentelemetry.sdk.resources import Resource
-    from opentelemetry.sdk.util.instrumentation import InstrumentationScope
+
+    from opentelemetry_exporter_oci_monitoring.converter import MetricsConverter
 
 logger = getLogger(__name__)
 
-UTC = timezone(timedelta())
 BATCH_ATOMICITY = Literal["ATOMIC", "NON_ATOMIC"]
 
 
 @dataclass
 class OCIMetricsExporter(MetricExporter):
     client: MonitoringClient = field(repr=False)
-    namespace: str
-    resource_group: str
-    compartment_id: str
-
-    dim_prefix_resource: str = ""
-    dim_prefix_scope: str = "scope."
+    converter: MetricsConverter[MetricDataDetails] = field(repr=False)
 
     batch_atomicity: BATCH_ATOMICITY = "ATOMIC"
-
     preferred_temporality: InitVar[dict[type, AggregationTemporality] | None] = None
     preferred_aggregation: InitVar[dict[type, Aggregation] | None] = None
 
@@ -86,7 +77,7 @@ class OCIMetricsExporter(MetricExporter):
 
         response = self.client.post_metric_data(
             PostMetricDataDetails(
-                metric_data=list(self._convert_metrics(metrics_data)),
+                metric_data=list(self.converter.convert(metrics_data)),
                 batch_atomicity=self.batch_atomicity,
             )
         )
@@ -119,64 +110,3 @@ class OCIMetricsExporter(MetricExporter):
             logger.warning(
                 "Ignored extra shutdown kwargs.", extra={"ignored_kwargs": kwargs}
             )
-
-    def _convert_metrics(
-        self, metrics_data: MetricsData, /
-    ) -> Iterator[MetricDataDetails]:
-        for resource_metric in metrics_data.resource_metrics:
-            resource = resource_metric.resource
-            resource_dims = self._extract_resource_dimensions(resource)
-            for scope_metric in resource_metric.scope_metrics:
-                scope = scope_metric.scope
-                scope_dims = self._extract_scope_dimensions(scope)
-                for metric in scope_metric.metrics:
-                    name = metric.name
-                    description = metric.description
-                    data = metric.data
-
-                    if isinstance(data, HistogramPoint):
-                        logger.warning(
-                            "Ignoring histogram metric data: Not implemented.",
-                            extra={
-                                "metric.name": metric.name,
-                                "metric.description": metric.description,
-                            },
-                        )
-                        continue
-
-                    datapoints = [
-                        Datapoint(
-                            timestamp=datetime.fromtimestamp(
-                                data_point.time_unix_nano / 1e9, tz=UTC
-                            ),
-                            value=float(data_point.value),
-                            count=1,
-                        )
-                        for data_point in data.data_points
-                    ]
-
-                    yield MetricDataDetails(
-                        namespace=self.namespace,
-                        resource_group=self.resource_group,
-                        compartment_id=self.compartment_id,
-                        name=name,
-                        dimensions={**resource_dims, **scope_dims},
-                        metadata={"description": description} if description else {},
-                        datapoints=datapoints,
-                    )
-
-    def _extract_resource_dimensions(self, resource: Resource, /) -> dict[str, str]:
-        return {
-            self.dim_prefix_resource + key: str(value)
-            for key, value in resource.attributes.items()
-        }
-
-    def _extract_scope_dimensions(
-        self, scope: InstrumentationScope, /
-    ) -> dict[str, str]:
-        dimensions = {self.dim_prefix_scope + "name": scope.name}
-        if scope.version:
-            dimensions[self.dim_prefix_scope + "version"] = scope.version
-        if scope.schema_url:
-            dimensions[self.dim_prefix_scope + "schema_url"] = scope.schema_url
-        return dimensions
