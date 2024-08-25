@@ -1,3 +1,21 @@
+## v0.4.0 (2024-08-25)
+
+### BREAKING CHANGE
+
+- The class was renamed to reflect the monitoring backend it is exporting. You need to update your imports - the functionality is the same.
+
+### Feat
+
+- add make_default_exporter convenience function
+
+### Fix
+
+- change type annotation of **kwargs to Any
+
+### Refactor
+
+- rename OCIMetricsExporter to OCIMonitoringExporter
+
 ## v0.3.0 (2024-08-04)
 
 ### BREAKING CHANGE
