@@ -68,7 +68,7 @@ class OCIMetricsExporter(MetricExporter):
         self,
         metrics_data: MetricsData,
         timeout_millis: float = 10_000,  # noqa: ARG002
-        **kwargs: dict[str, Any],
+        **kwargs: Any,  # noqa: ANN401
     ) -> MetricExportResult:
         if len(kwargs) > 0:
             logger.warning(
@@ -104,7 +104,7 @@ class OCIMetricsExporter(MetricExporter):
     def shutdown(
         self,
         timeout_millis: float = 30_000,  # noqa: ARG002
-        **kwargs: dict[str, Any],
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         if len(kwargs) > 0:
             logger.warning(
