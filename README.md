@@ -23,12 +23,10 @@ This software is in an early development phase. Feel free to use it at your own 
 
 ```python
 from oci.monitoring import MonitoringClient
-from opentelemetry_exporter_oci_monitoring import OCIMonitoringExporter
-from opentelemetry_exporter_oci_monitoring.converter import DefaultMetricsConverter
+from opentelemetry_exporter_oci_monitoring.utils import make_default_exporter
 
 client = MonitoringClient(service_endpoint="https://telemetry-ingestion.eu-frankfurt-1.oraclecloud.com", ...)
-converter = DefaultMetricsConverter(namespace="my-met-ns", resource_group="my-res-grp", compartment_id="ocid1.compartment.abc123")
-exporter = OCIMonitoringExporter(client, converter)
+exporter = make_default_exporter(client, namespace="my-met-ns", resource_group="my-res-grp", compartment_id="ocid1.compartment.abc123")
 ```
 
 Remember to set the service endpoint to a `telemetry-ingestion` URL (e.g. `https://telemetry-ingestion.eu-frankfurt-1.oraclecloud.com`) when creating the metrics client. For more details refer to the [OCI Documentation of PostMetricData API](https://docs.oracle.com/en-us/iaas/api/#/en/monitoring/20180401/MetricData/PostMetricData).
