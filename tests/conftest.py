@@ -22,7 +22,7 @@ from opentelemetry.util.types import (  # pyright: ignore[reportMissingTypeStubs
     AttributeValue,
 )
 
-from opentelemetry_exporter_oci_monitoring import OCIMetricsExporter
+from opentelemetry_exporter_oci_monitoring import OCIMonitoringExporter
 from opentelemetry_exporter_oci_monitoring.converter import DefaultMetricsConverter
 
 Attributes = Dict[str, AttributeValue]
@@ -138,7 +138,7 @@ def oci_metrics_converter() -> DefaultMetricsConverter:
 
 
 @pytest.fixture()
-def oci_metrics_exporter(
+def oci_monitoring_exporter(
     monitoring_client: NonCallableMock, oci_metrics_converter: DefaultMetricsConverter
-) -> OCIMetricsExporter:
-    return OCIMetricsExporter(monitoring_client, oci_metrics_converter)
+) -> OCIMonitoringExporter:
+    return OCIMonitoringExporter(monitoring_client, oci_metrics_converter)

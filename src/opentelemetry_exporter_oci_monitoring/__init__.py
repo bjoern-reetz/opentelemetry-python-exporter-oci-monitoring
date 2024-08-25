@@ -34,7 +34,7 @@ BATCH_ATOMICITY = Literal["ATOMIC", "NON_ATOMIC"]
 
 
 @dataclass
-class OCIMetricsExporter(MetricExporter):
+class OCIMonitoringExporter(MetricExporter):
     client: MonitoringClient = field(repr=False)
     converter: MetricsConverter = field(repr=False)
 
