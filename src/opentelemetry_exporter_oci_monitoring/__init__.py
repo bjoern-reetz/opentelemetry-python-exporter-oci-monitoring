@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import json
 from dataclasses import InitVar, dataclass, field
+from functools import partial
 from http import HTTPStatus
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from oci.monitoring.models import PostMetricDataDetails
+from oci.util import to_dict
 from opentelemetry.sdk.metrics._internal.instrument import (
     Counter,
     Gauge,
@@ -110,3 +113,14 @@ class OCIMonitoringExporter(MetricExporter):
             logger.warning(
                 "Ignored extra shutdown kwargs.", extra={"ignored_kwargs": kwargs}
             )
+
+
+@dataclass
+class MetricsSerializer:
+    converter: MetricsConverter
+    json_serializer: Callable[[Any], str] = field(default=partial(json.dumps, indent=4))
+
+    def __call__(self, metrics_data: MetricsData, /) -> str:
+        return self.json_serializer(
+            [to_dict(obj) for obj in self.converter.convert(metrics_data)]
+        )

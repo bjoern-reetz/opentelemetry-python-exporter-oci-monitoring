@@ -23,10 +23,17 @@ This software is in an early development phase. Feel free to use it at your own 
 
 ```python
 from oci.monitoring import MonitoringClient
+from opentelemetry_exporter_oci_monitoring import MetricsSerializer
 from opentelemetry_exporter_oci_monitoring.utils import make_default_exporter
+from opentelemetry.sdk.metrics.export import ConsoleMetricExporter
 
 client = MonitoringClient(service_endpoint="https://telemetry-ingestion.eu-frankfurt-1.oraclecloud.com", ...)
 exporter = make_default_exporter(client, namespace="my-met-ns", resource_group="my-res-grp", compartment_id="ocid1.compartment.abc123")
+
+# for local development, you can export the converted metrics to stdout
+
+metrics_serializer = MetricsSerializer(exporter.converter)
+console_exporter = ConsoleMetricExporter(formatter=metrics_serializer)
 ```
 
 Remember to set the service endpoint to a `telemetry-ingestion` URL (e.g. `https://telemetry-ingestion.eu-frankfurt-1.oraclecloud.com`) when creating the metrics client. For more details refer to the [OCI Documentation of PostMetricData API](https://docs.oracle.com/en-us/iaas/api/#/en/monitoring/20180401/MetricData/PostMetricData).
