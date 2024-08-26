@@ -1,22 +1,31 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+import json
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from logging import getLogger
-from typing import TYPE_CHECKING, Iterator, Protocol
+from typing import TYPE_CHECKING, Iterator, Mapping, Protocol, Sequence, Union
 
 from oci.monitoring.models import Datapoint, MetricDataDetails
-from opentelemetry.sdk.metrics.export import Histogram as HistogramPoint
-from opentelemetry.sdk.metrics.export import Metric, MetricsData
+from opentelemetry.sdk.metrics.export import (
+    Histogram,
+    HistogramDataPoint,
+    Metric,
+    MetricsData,
+    NumberDataPoint,
+)
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.util.instrumentation import InstrumentationScope
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.util.instrumentation import InstrumentationScope
+
+AttributeValue = Union[
+    str, bool, int, float, Sequence[str], Sequence[bool], Sequence[int], Sequence[float]
+]
+Attributes = Mapping[str, AttributeValue]
+
 
 logger = getLogger(__name__)
 
@@ -25,8 +34,28 @@ UTC = timezone(timedelta())
 
 class DimensionsExtractor(Protocol):
     def extract(
-        self, resource: Resource, scope: InstrumentationScope
+        self,
+        resource: Resource,
+        scope: InstrumentationScope,
+        data_point: NumberDataPoint | HistogramDataPoint,
     ) -> Mapping[str, str]: ...
+
+
+def flatten_attribute_value(value: AttributeValue, /) -> str:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (bool, int, float)):
+        return json.dumps(value)
+    return ",".join(flatten_attribute_value(primitive) for primitive in value)
+
+
+def normalize_attributes(
+    attributes: Attributes, /, prefix: str = ""
+) -> Mapping[str, str]:
+    return {
+        prefix + key: flatten_attribute_value(value)
+        for key, value in sorted(attributes.items())
+    }
 
 
 @dataclass
@@ -35,18 +64,22 @@ class PrefixedDimensionsExtractor(DimensionsExtractor):
     prefix_scope: str = "scope."
 
     def extract(
-        self, resource: Resource, scope: InstrumentationScope
+        self,
+        resource: Resource,
+        scope: InstrumentationScope,
+        data_point: NumberDataPoint | HistogramDataPoint,
     ) -> Mapping[str, str]:
-        dimensions = {
-            self.prefix_resource + key: str(value)
-            for key, value in resource.attributes.items()
-        }
-
-        dimensions[self.prefix_scope + "name"] = scope.name
+        scope_dimensions = {self.prefix_scope + "name": scope.name}
         if scope.version:
-            dimensions[self.prefix_scope + "version"] = scope.version
+            scope_dimensions[self.prefix_scope + "version"] = scope.version
 
-        return dimensions
+        resource_dimensions = normalize_attributes(
+            resource.attributes, prefix=self.prefix_resource
+        )
+
+        attribute_dimensions = normalize_attributes(data_point.attributes or {})
+
+        return {**scope_dimensions, **resource_dimensions, **attribute_dimensions}
 
 
 class MetadataExtractor(Protocol):
@@ -96,7 +129,7 @@ class DefaultMetricsConverter(MetricsConverter):
                     name = metric.name
                     data = metric.data
 
-                    if isinstance(data, HistogramPoint):
+                    if isinstance(data, Histogram):
                         logger.warning(
                             "Ignoring histogram metric data: Not implemented.",
                             extra={
@@ -106,25 +139,41 @@ class DefaultMetricsConverter(MetricsConverter):
                         )
                         continue
 
-                    datapoints = [
-                        Datapoint(
+                    metadata = self.metadata_extractor.extract(resource, scope, metric)
+
+                    metric_data_details_map: Mapping[
+                        frozenset[tuple[str, str]], MetricDataDetails
+                    ] = {}
+                    for data_point in data.data_points:
+                        dimensions = self.dimensions_extractor.extract(
+                            resource, scope, data_point
+                        )
+
+                        key = frozenset(dimensions.items())
+                        metric_data_details = metric_data_details_map.get(key)
+                        if metric_data_details is None:
+                            metric_data_details = MetricDataDetails(
+                                namespace=self.namespace,
+                                resource_group=self.resource_group,
+                                compartment_id=self.compartment_id,
+                                name=name,
+                                dimensions=dimensions,
+                                metadata=metadata,
+                                datapoints=[],
+                            )
+                            metric_data_details_map[key] = metric_data_details
+
+                        datapoint = Datapoint(
                             timestamp=datetime.fromtimestamp(
                                 data_point.time_unix_nano / 1e9, tz=UTC
                             ),
                             value=float(data_point.value),
                             count=1,
                         )
-                        for data_point in data.data_points
-                    ]
 
-                    yield MetricDataDetails(
-                        namespace=self.namespace,
-                        resource_group=self.resource_group,
-                        compartment_id=self.compartment_id,
-                        name=name,
-                        dimensions=self.dimensions_extractor.extract(resource, scope),
-                        metadata=self.metadata_extractor.extract(
-                            resource, scope, metric
-                        ),
-                        datapoints=datapoints,
-                    )
+                        metric_data_details.datapoints = [
+                            *metric_data_details.datapoints,
+                            datapoint,
+                        ]
+
+                    yield from metric_data_details_map.values()

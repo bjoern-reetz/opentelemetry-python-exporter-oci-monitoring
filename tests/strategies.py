@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Mapping
+from typing import TYPE_CHECKING
 
 import hypothesis.strategies as st
 from opentelemetry.sdk.metrics.export import (
@@ -10,11 +10,9 @@ from opentelemetry.sdk.metrics.export import (
     NumberDataPoint,
     Sum,
 )
-from opentelemetry.util.types import (  # pyright: ignore[reportMissingTypeStubs]
-    AttributeValue,
-)
 
-Attributes = Mapping[str, AttributeValue]
+if TYPE_CHECKING:
+    from opentelemetry_exporter_oci_monitoring.converter import Attributes
 
 
 def simple_strings(

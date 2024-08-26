@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Dict
 from unittest.mock import NonCallableMock
 
 import pytest
@@ -18,14 +17,12 @@ from opentelemetry.sdk.metrics.export import (
 )
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.util.instrumentation import InstrumentationScope
-from opentelemetry.util.types import (  # pyright: ignore[reportMissingTypeStubs]
-    AttributeValue,
-)
 
 from opentelemetry_exporter_oci_monitoring import OCIMonitoringExporter
-from opentelemetry_exporter_oci_monitoring.converter import DefaultMetricsConverter
-
-Attributes = Dict[str, AttributeValue]
+from opentelemetry_exporter_oci_monitoring.converter import (
+    Attributes,
+    DefaultMetricsConverter,
+)
 
 
 @pytest.fixture()
@@ -98,7 +95,7 @@ def scope_metrics(metric: Metric) -> ScopeMetrics:
 def resource_metrics(
     scope_metrics: ScopeMetrics, attributes: Attributes
 ) -> ResourceMetrics:
-    resource = Resource(attributes=attributes)
+    resource = Resource(attributes=dict(attributes))
     return ResourceMetrics(
         resource=resource, scope_metrics=[scope_metrics], schema_url=""
     )
