@@ -1,3 +1,9 @@
+## v0.6.0 (2024-08-26)
+
+### Feat
+
+- add MetricsSerializer
+
 ## v0.5.0 (2024-08-26)
 
 ### BREAKING CHANGE
