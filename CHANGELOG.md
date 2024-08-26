@@ -1,3 +1,13 @@
+## v0.5.0 (2024-08-26)
+
+### BREAKING CHANGE
+
+- Serialization of non-string values in attributes was changed.
+
+### Refactor
+
+- normalize sequence serialization in dimensions
+
 ## v0.4.0 (2024-08-25)
 
 ### BREAKING CHANGE
