@@ -25,7 +25,7 @@ from opentelemetry_exporter_oci_monitoring.converter import (
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def attributes() -> Attributes:
     return {
         "a.string": "bar",
@@ -41,7 +41,7 @@ def attributes() -> Attributes:
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def number_data_point(attributes: Attributes | None) -> NumberDataPoint:
     return NumberDataPoint(
         attributes=attributes,
@@ -51,7 +51,7 @@ def number_data_point(attributes: Attributes | None) -> NumberDataPoint:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def otel_sum(number_data_point: NumberDataPoint) -> Sum:
     data_points = [number_data_point]
     delta = 100_000
@@ -78,12 +78,12 @@ def otel_sum(number_data_point: NumberDataPoint) -> Sum:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def metric(otel_sum: Sum) -> Metric:
     return Metric(name="foo.metric", description=None, unit=None, data=otel_sum)
 
 
-@pytest.fixture()
+@pytest.fixture
 def scope_metrics(metric: Metric) -> ScopeMetrics:
     metrics = 2 * [metric]
     return ScopeMetrics(
@@ -91,7 +91,7 @@ def scope_metrics(metric: Metric) -> ScopeMetrics:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def resource_metrics(
     scope_metrics: ScopeMetrics, attributes: Attributes
 ) -> ResourceMetrics:
@@ -101,13 +101,13 @@ def resource_metrics(
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def metrics_data(resource_metrics: ResourceMetrics) -> MetricsData:
     resource_metrics_list = 2 * [resource_metrics]
     return MetricsData(resource_metrics=resource_metrics_list)
 
 
-@pytest.fixture()
+@pytest.fixture
 def post_metrics_data_response() -> NonCallableMock:
     data = PostMetricDataResponseDetails(failed_metrics_count=0, failed_metrics=[])
     mock = NonCallableMock(
@@ -119,14 +119,14 @@ def post_metrics_data_response() -> NonCallableMock:
     return mock
 
 
-@pytest.fixture()
+@pytest.fixture
 def monitoring_client(post_metrics_data_response: NonCallableMock) -> NonCallableMock:
     mock = NonCallableMock(spec_set=MonitoringClient)
     mock.configure_mock(**{"post_metric_data.return_value": post_metrics_data_response})
     return mock
 
 
-@pytest.fixture()
+@pytest.fixture
 def oci_metrics_converter() -> DefaultMetricsConverter:
     namespace = "my-namespace"
     resource_group = "my-resource-group"
@@ -134,7 +134,7 @@ def oci_metrics_converter() -> DefaultMetricsConverter:
     return DefaultMetricsConverter(namespace, resource_group, compartment_id)
 
 
-@pytest.fixture()
+@pytest.fixture
 def oci_monitoring_exporter(
     monitoring_client: NonCallableMock, oci_metrics_converter: DefaultMetricsConverter
 ) -> OCIMonitoringExporter:

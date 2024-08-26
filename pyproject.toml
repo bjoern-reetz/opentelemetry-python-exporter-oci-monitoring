@@ -54,6 +54,7 @@ pybadges = "^3.0.1"
 hypothesis = "^6.105.0"
 setuptools = "^71.0.4"
 attrs = "^24.1.0"
+ruff = "^0.6.2"
 
 [tool.poetry.group.pyright]
 optional = true
